@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bike Maintenance</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#d9480f">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1b1f24;--mut:#6b7280;--pri:#d9480f;--bd:#e5e7eb;--ok:#2b8a3e;--warn:#e67700;--bad:#c92a2a}
+@media(prefers-color-scheme:dark){:root{--bg:#14161a;--card:#1f2228;--tx:#eceef1;--mut:#9aa1ab;--bd:#2d313a}}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,sans-serif;background:var(--bg);color:var(--tx);padding-bottom:70px}
+header{background:var(--pri);color:#fff;padding:14px 16px;font-size:18px;font-weight:700}
+.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--bd)}
+.tabs button{flex:1;padding:14px 2px;border:0;background:none;color:var(--mut);font-size:13px}
+.tabs button.on{color:var(--pri);font-weight:700}
+.pg{display:none;padding:12px}.pg.on{display:block}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font-size:16px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.btn{background:var(--pri);color:#fff;border:0;border-radius:8px;padding:12px;font-size:16px;width:100%;margin-top:12px}
+.btn.s{background:var(--bd);color:var(--tx);width:auto;padding:8px 12px;margin:0;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{border:1px solid var(--pri);color:var(--pri);border-radius:16px;padding:5px 10px;font-size:13px;background:none}
+.info{background:var(--bg);border-radius:8px;padding:8px 10px;margin-top:10px;font-size:14px}
+.pt{display:flex;gap:6px;margin-bottom:6px}.pt input:first-child{flex:2}.pt input:nth-child(2){flex:1}
+.x{background:none;border:0;color:var(--bad);font-size:22px}
+.big{font-size:22px;font-weight:700;color:var(--pri)}
+.m{color:var(--mut);font-size:13px}
+.bar{height:8px;background:var(--bd);border-radius:4px;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%}
+.alert{border-radius:10px;padding:12px;color:#fff;font-weight:700;margin-bottom:12px}
+.tot{font-size:16px;text-align:right;margin-top:8px}
+.acc{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.acc>.h{padding:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer}
+.acc>.b{display:none;padding:0 12px 12px}.acc.open>.b{display:block}
+.acc .ar{transition:transform .2s;color:var(--mut)}.acc.open .ar{transform:rotate(180deg)}
+.acc.dueh{border:2px solid var(--bad)}
+.badge{display:inline-block;background:var(--bad);color:#fff;border-radius:10px;padding:2px 8px;font-size:12px;font-weight:700;margin-left:6px}
+#gAlert div{padding:10px 14px;color:#fff;font-weight:700;font-size:14px}
+.tabs button.dueTab{background:var(--bad);color:#fff;font-weight:700;animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.55}}
+#dueModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;align-items:center;justify-content:center;padding:20px}
+#dueModal .bx{background:var(--card);border-radius:14px;padding:20px;max-width:360px;text-align:center}
+#dueModal .ic{font-size:44px}
+#auth{position:fixed;inset:0;background:var(--bg);z-index:30;overflow:auto;padding:20px;display:none}
+#auth .bx{max-width:380px;margin:30px auto}
+#auth h2{color:var(--pri);text-align:center}
+.err{color:var(--bad);font-size:13px;margin-top:8px;min-height:16px}
+#updBar div{background:#1971c2;color:#fff;padding:10px 14px;font-weight:700;font-size:14px}
+#consent{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:25;align-items:center;justify-content:center;padding:20px}
+#consent .bx{background:var(--card);border-radius:14px;padding:20px;max-width:360px}
+textarea{min-height:90px}
+#slip{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);overflow:auto;z-index:9;padding:12px}
+.paper{background:#fff;color:#111;max-width:420px;margin:0 auto;padding:16px;border-radius:6px;font-family:monospace;font-size:14px}
+.paper h2{text-align:center;margin:0 0 4px}.paper hr{border:0;border-top:1px dashed #555;margin:8px 0}
+.paper .l{display:flex;justify-content:space-between;gap:8px;margin:3px 0}
+.paper .t{font-weight:700;font-size:16px}
+.sb{max-width:420px;margin:10px auto;display:flex;gap:8px}.sb button{flex:1;padding:12px;border:0;border-radius:8px;font-size:15px}
+@media print{body>*:not(#slip){display:none!important}#slip{position:static;background:none;padding:0}.sb{display:none}}
+</style>
+</head>
+<body>
+<header>🏍️ Bike Maintenance Record</header>
+<div id="gAlert"></div>
+<div id="dueModal"><div class="bx"><div class="ic" id="dmI"></div><h3 id="dmT"></h3><p id="dmM"></p><button class="btn" onclick="$('dueModal').style.display='none'">OK</button></div></div>
+
+<!-- STATUS -->
+<div class="pg on" id="p0">
+ <div id="alertBox"></div>
+ <div class="card">
+  <label>Current odometer (km)</label>
+  <input type="number" id="cur" inputmode="decimal" oninput="setCur()">
+  <div id="status"></div>
+ </div>
+</div>
+
+<!-- NEW RECORD -->
+<div class="pg" id="p1">
+ <div class="card">
+  <label>Date</label><input type="date" id="dt">
+  <label>Mechanic name</label><input id="mech" placeholder="e.g. Ali Workshop">
+  <div class="row">
+   <div><label>Previous km</label><input type="number" id="pv" inputmode="decimal"></div>
+   <div><label>Present km</label><input type="number" id="pr" inputmode="decimal"></div>
+  </div>
+  <div class="info" id="calc">-</div>
+  <label>Parts changed (name &amp; cost)</label>
+  <div class="chips" id="chips"></div>
+  <div id="plist"></div>
+  <button class="btn s" onclick="addPart('')">+ Add part</button>
+  <label>Tuning / labour charges</label>
+  <input type="number" id="tun" inputmode="decimal" placeholder="0">
+  <label>Tuning details / notes</label><textarea id="nt" placeholder="e.g. carburetor tuning, chain adjust"></textarea>
+  <div class="tot" id="tot">Total: 0</div>
+  <button class="btn" onclick="save()">Save &amp; View Slip</button>
+ </div>
+</div>
+
+<!-- PARTS -->
+<div class="pg" id="p2"><div id="parts"></div></div>
+
+<!-- HISTORY -->
+<div class="pg" id="p3"><div id="hist"></div></div>
+
+<!-- SETTINGS -->
+<div class="pg" id="p4">
+ <p class="m" id="ver" style="text-align:right;margin:0 0 8px"></p>
+ <div class="card">
+  <label>Set point: service interval (km)</label>
+  <input type="number" id="intv" inputmode="decimal" oninput="setInt()">
+  <p class="m">Next service is due at: last service km + this interval. An alert shows when you reach it.</p>
+ </div>
+ <div class="card">
+  <label>Bike name / number (shown on slip)</label>
+  <input id="bike" oninput="setBike()" placeholder="e.g. Honda CD70 - ABC 123">
+ </div>
+ <div class="card">
+  <p class="m">Backup: copy the text below and keep it safe. To restore, paste it and tap Restore.</p>
+  <textarea id="bk"></textarea>
+  <div class="row" style="margin-top:8px">
+   <button class="btn s" onclick="exp()">Create backup</button>
+   <button class="btn s" onclick="imp()">Restore</button>
+  </div>
+ </div>
+</div>
+
+<!-- SLIP -->
+<div id="slip">
+ <div class="paper" id="paper"></div>
+ <div class="sb">
+  <button onclick="copySlip()" style="background:#2b8a3e;color:#fff">Copy text</button>
+  <button onclick="window.print()" style="background:#1971c2;color:#fff">Print</button>
+  <button onclick="closeSlip()" style="background:#ddd">Close</button>
+ </div>
+</div>
+
+<div class="tabs">
+ <button class="on" onclick="tab(0)">Status</button>
+ <button onclick="tab(1)">New</button>
+ <button onclick="tab(2)">Parts</button>
+ <button onclick="tab(3)">History</button>
+ <button onclick="tab(4)">Settings</button>
+</div>
+
+<script>
+var APP_VERSION=1; // increase this number each time you upload a new version
+var S={records:[],cur:0,interval:3000,bike:'',updated:0};
+var KEY='';
+function newS(){return {records:[],cur:0,interval:3000,bike:'',updated:0}}
+var COMMON=['Engine Oil','Oil Filter','Air Filter','Spark Plug','Chain Set','Brake Pad','Clutch Plate','Tyre','Battery'];
+var slipText='';
+function load(){try{var d=localStorage.getItem(KEY);if(d){var o=JSON.parse(d);for(var k in o)S[k]=o[k]}}catch(e){}}
+function store(){S.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function n(v){v=parseFloat(v);return isNaN(v)?0:v}
+function sorted(){return S.records.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.id-b.id})}
+function last(){var s=sorted();return s[s.length-1]}
+function curKm(){var m=S.cur||0;S.records.forEach(function(r){if(r.pres>m)m=r.pres});return m}
+function days(a,b){return Math.round((new Date(b)-new Date(a))/864e5)}
+function today(){return new Date().toISOString().slice(0,10)}
+function recTotal(r){var t=n(r.tuning);r.parts.forEach(function(p){t+=n(p.cost)});return t}
+
+function tab(i){for(var k=0;k<5;k++){$('p'+k).classList.toggle('on',k==i);document.querySelectorAll('.tabs button')[k].classList.toggle('on',k==i)}
+ if(i==0)renderStatus();if(i==2)renderParts();if(i==3)renderHist();if(i==4){$('intv').value=S.interval;$('bike').value=S.bike||''}}
+
+function renderStatus(){var c=curKm(),l=last();$('cur').value=c||'';
+ if(!l){$('alertBox').innerHTML='';$('status').innerHTML='<p class="m">No service record yet. Add one from the New tab.</p>';return}
+ var due=l.pres+n(S.interval),rem=due-c,done=c-l.pres,pct=Math.min(100,Math.max(0,done/n(S.interval)*100)),
+ col=rem<=0?'var(--bad)':(rem<=n(S.interval)*0.1?'var(--warn)':'var(--ok)'),a='';
+ if(rem<=0)a='<div class="alert" style="background:var(--bad)">⚠️ SERVICE DUE! Overdue by '+Math.abs(rem)+' km</div>';
+ else if(rem<=n(S.interval)*0.1)a='<div class="alert" style="background:var(--warn)">🔔 Service coming soon — only '+rem+' km left</div>';
+ $('alertBox').innerHTML=a;
+ $('status').innerHTML='<div class="info">Last service: <b>'+l.date+'</b> at <b>'+l.pres+' km</b> ('+days(l.date,today())+' days ago)</div>'+
+ '<div class="info">Set point: every <b>'+S.interval+' km</b><br>Next service due at: <b>'+due+' km</b></div>'+
+ '<div class="big" style="color:'+col+';margin-top:10px">'+(rem>0?rem+' km left':'Overdue '+Math.abs(rem)+' km')+'</div>'+
+ '<div class="bar"><i style="width:'+pct+'%;background:'+col+'"></i></div><div class="m">'+done+' km run since last service</div>'}
+function setCur(){S.cur=n($('cur').value);store();var l=last();if(!l)return;
+ var keep=$('cur').value;renderStatus();$('cur').value=keep;checkDue(false)}
+function setInt(){S.interval=n($('intv').value)||3000;store()}
+function setBike(){S.bike=$('bike').value;store()}
+
+function calc(){var l=last(),pv=parseFloat($('pv').value),pr=parseFloat($('pr').value),h='';
+ if(!isNaN(pv)&&!isNaN(pr))h+='Km run since previous: <b>'+(pr-pv)+' km</b>';
+ if(l&&$('dt').value)h+=(h?'<br>':'')+'Days since last maintenance: <b>'+days(l.date,$('dt').value)+'</b>';
+ $('calc').innerHTML=h||'-';
+ var t=n($('tun').value);document.querySelectorAll('#plist .pt').forEach(function(d){t+=n(d.children[1].value)});
+ $('tot').innerHTML='Total: <b>Rs '+t+'</b>'}
+function addPart(nm){var d=document.createElement('div');d.className='pt';
+ d.innerHTML='<input placeholder="Part name" value="'+esc(nm)+'"><input type="number" inputmode="decimal" placeholder="Cost"><button class="x" onclick="this.parentNode.remove();calc()">×</button>';
+ d.children[1].addEventListener('input',calc);$('plist').appendChild(d)}
+function save(){var pv=parseFloat($('pv').value),pr=parseFloat($('pr').value),dt=$('dt').value;
+ if(!dt||isNaN(pr)){alert('Date and present km are required');return}
+ if(isNaN(pv))pv=0;
+ if(pr<pv){alert('Present km cannot be less than previous km');return}
+ var parts=[];document.querySelectorAll('#plist .pt').forEach(function(d){if(d.children[0].value.trim())parts.push({name:d.children[0].value.trim(),cost:n(d.children[1].value)})});
+ var l=last();
+ var r={id:Date.now(),date:dt,mech:$('mech').value.trim(),prev:pv,pres:pr,gap:l?days(l.date,dt):0,tuning:n($('tun').value),notes:$('nt').value.trim(),parts:parts};
+ S.records.push(r);if(pr>S.cur)S.cur=pr;store();
+ $('plist').innerHTML='';$('nt').value='';$('tun').value='';$('pr').value='';initForm();checkDue(false);showSlip(r.id)}
+function initForm(){var l=last();$('dt').value=today();$('pv').value=l?l.pres:'';if(l&&l.mech)$('mech').value=l.mech;calc()}
+
+function fmt(d){var m=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],p=d.split('-');return parseInt(p[2])+' '+m[parseInt(p[1])-1]+' '+p[0]}
+function tg(el){el.parentNode.classList.toggle('open')}
+function dueInfo(){var l=last();if(!l)return null;var due=l.pres+n(S.interval),rem=due-curKm();return{due:due,rem:rem,state:rem<=0?'bad':(rem<=n(S.interval)*0.1?'warn':'ok')}}
+var lastState='ok';
+function checkDue(popup){var d=dueInfo(),g=$('gAlert'),t=document.querySelectorAll('.tabs button')[0];
+ if(!d||d.state=='ok'){g.innerHTML='';t.classList.remove('dueTab');lastState='ok';return}
+ var msg=d.state=='bad'?(d.rem==0?'Set point reached':'Overdue by '+Math.abs(d.rem)+' km'):d.rem+' km left';
+ g.innerHTML='<div style="background:var(--'+(d.state=='bad'?'bad':'warn')+')" onclick="tab(0)">'+(d.state=='bad'?'⚠️ MAINTENANCE DUE — ':'🔔 Service soon — ')+msg+'</div>';
+ t.classList.toggle('dueTab',d.state=='bad');
+ if(popup&&d.state!=lastState){$('dmI').textContent=d.state=='bad'?'⚠️':'🔔';
+  $('dmT').textContent=d.state=='bad'?'Maintenance Due!':'Service Coming Soon';
+  $('dmM').textContent='Current: '+curKm()+' km. Next service at '+d.due+' km. '+msg+'.';$('dueModal').style.display='flex'}
+ lastState=d.state}
+function renderParts(){var recs=sorted(),c=curKm(),occ={},h='';
+ recs.forEach(function(r){r.parts.forEach(function(p){var k=p.name.toLowerCase();(occ[k]=occ[k]||[]).push({r:r,p:p})})});
+ var list=recs.filter(function(r){return r.parts.length}).reverse();
+ if(!list.length)h='<p class="m">No part changes recorded yet.</p>';
+ list.forEach(function(r,i){var body='';
+  r.parts.forEach(function(p){var arr=occ[p.name.toLowerCase()],idx=0;
+   arr.forEach(function(o,j){if(o.r===r&&o.p===p)idx=j});var nx=arr[idx+1],run,tag,col;
+   if(nx){run=nx.r.pres-r.pres;tag='Lasted '+run+' km (replaced '+fmt(nx.r.date)+')';col='var(--mut)'}
+   else{run=Math.max(0,c-r.pres);tag='Running now';col='var(--pri)'}
+   body+='<div class="info"><b>'+esc(p.name)+'</b>'+(p.cost?' <span class="m">· Rs '+p.cost+'</span>':'')+
+    '<div class="big" style="color:'+col+'">'+run+' km</div><div class="m">'+tag+' • changed at '+r.pres+' km</div></div>'});
+  h+='<div class="acc'+(i==0?' open':'')+'"><div class="h" onclick="tg(this)"><div><b>'+fmt(r.date)+'</b><div class="m">'+r.parts.length+' part'+(r.parts.length>1?'s':'')+' changed • '+r.pres+' km</div></div><span class="ar">▼</span></div><div class="b">'+body+'</div></div>'});
+ $('parts').innerHTML=h}
+function renderHist(){var s=sorted().reverse(),h='',g=0,d=dueInfo();
+ if(!s.length)h='<p class="m">No records yet.</p>';
+ s.forEach(function(r,i){g+=recTotal(r);var isDue=(i==0&&d&&d.state=='bad');
+  h+='<div class="acc'+(i==0?' open':'')+(isDue?' dueh':'')+'"><div class="h" onclick="tg(this)"><div><b>'+fmt(r.date)+'</b>'+(isDue?'<span class="badge">DUE</span>':'')+
+   '<div class="m">'+r.prev+' → '+r.pres+' km • Rs '+recTotal(r)+'</div></div><span class="ar">▼</span></div><div class="b">'+
+   (r.mech?'<div class="m">Mechanic: '+esc(r.mech)+'</div>':'')+
+   '<div class="m">Km run: '+(r.pres-r.prev)+(r.gap?' • '+r.gap+' days after previous':'')+'</div>'+
+   (r.parts.length?'<div class="chips">'+r.parts.map(function(p){return '<span class="chip">'+esc(p.name)+(p.cost?' · '+p.cost:'')+'</span>'}).join('')+'</div>':'')+
+   (r.tuning?'<div>Tuning / labour: Rs '+r.tuning+'</div>':'')+(r.notes?'<div class="m">'+esc(r.notes)+'</div>':'')+
+   '<div><b>Total: Rs '+recTotal(r)+'</b></div>'+
+   '<div class="row" style="margin-top:8px"><button class="btn s" onclick="showSlip('+r.id+')">View Slip</button><button class="btn s" onclick="del('+r.id+')">Delete</button></div></div></div>'});
+ if(s.length)h='<div class="card"><b>Total spent on all services: Rs '+g+'</b></div>'+h;
+ $('hist').innerHTML=h}
+function del(id){if(!confirm('Delete this record?'))return;S.records=S.records.filter(function(r){return r.id!=id});store();initForm();checkDue(false);renderHist()}
+
+function showSlip(id){var r=S.records.filter(function(x){return x.id==id})[0];if(!r)return;
+ var pt=0,h='<h2>SERVICE SLIP</h2>'+(S.bike?'<div style="text-align:center">'+esc(S.bike)+'</div>':'')+'<hr>',
+ t='SERVICE SLIP\n'+(S.bike?S.bike+'\n':'')+'------------------------\n';
+ function L(a,b){h+='<div class="l"><span>'+esc(a)+'</span><span>'+esc(b)+'</span></div>';t+=a+': '+b+'\n'}
+ L('Date',r.date);if(r.mech)L('Mechanic',r.mech);
+ L('Previous km',r.prev);L('Present km',r.pres);L('Km run',r.pres-r.prev);
+ if(r.gap)L('Days since last',r.gap);
+ h+='<hr>';t+='------------------------\n';
+ if(r.parts.length){h+='<b>Parts changed</b>';t+='Parts changed\n';
+  r.parts.forEach(function(p){pt+=n(p.cost);h+='<div class="l"><span>'+esc(p.name)+'</span><span>'+p.cost+'</span></div>';t+=' - '+p.name+': '+p.cost+'\n'});
+  h+='<div class="l"><span>Parts total</span><span>'+pt+'</span></div><hr>';t+='Parts total: '+pt+'\n------------------------\n'}
+ if(r.tuning||r.notes){L('Tuning / labour',r.tuning);if(r.notes){h+='<div>'+esc(r.notes)+'</div>';t+=r.notes+'\n'}h+='<hr>';t+='------------------------\n'}
+ h+='<div class="l t"><span>TOTAL (Rs)</span><span>'+recTotal(r)+'</span></div><hr>';t+='TOTAL (Rs): '+recTotal(r)+'\n';
+ var due=r.pres+n(S.interval);
+ h+='<div class="l"><span>Next service at</span><span>'+due+' km</span></div>';t+='Next service at: '+due+' km\n';
+ $('paper').innerHTML=h;slipText=t;$('slip').style.display='block'}
+function closeSlip(){$('slip').style.display='none'}
+function copySlip(){var ta=document.createElement('textarea');ta.value=slipText;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');alert('Slip copied. Paste it in WhatsApp or notes.')}catch(e){}ta.remove()}
+
+function exp(){$('bk').value=JSON.stringify(S);$('bk').select();try{document.execCommand('copy')}catch(e){}}
+function imp(){try{var d=JSON.parse($('bk').value);if(!d.records)throw 0;S=d;store();initForm();alert('Restored ✅')}catch(e){alert('Invalid backup text')}}
+
+COMMON.forEach(function(nm){var b=document.createElement('button');b.className='chip';b.textContent='+ '+nm;b.onclick=function(){addPart(nm)};$('chips').appendChild(b)});
+['dt','pv','pr','tun'].forEach(function(i){$(i).addEventListener('input',calc)});
+$('cur').addEventListener('change',function(){checkDue(true)});
+KEY='bikeMaint2_local';S=newS();load();
+initForm();renderStatus();checkDue(true);
+if($("ver"))$("ver").textContent="Version "+APP_VERSION;
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").then(function(r){r.update()}).catch(function(){})})}
+</script>
+</body>
+</html>
