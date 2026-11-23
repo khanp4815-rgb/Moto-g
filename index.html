@@ -53,6 +53,9 @@ input,textarea{width:100%;padding:10px;border:1px solid var(--bd);border-radius:
 #updBar div{background:#1971c2;color:#fff;padding:10px 14px;font-weight:700;font-size:14px}
 #consent{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:25;align-items:center;justify-content:center;padding:20px}
 #consent .bx{background:var(--card);border-radius:14px;padding:20px;max-width:360px}
+#dlg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:40;align-items:center;justify-content:center;padding:20px}
+#dlg .bx{background:var(--card);border-radius:14px;padding:20px;width:100%;max-width:340px}
+#dlg p{margin:0 0 16px;font-size:16px}
 textarea{min-height:90px}
 #slip{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);overflow:auto;z-index:9;padding:12px}
 .paper{background:#fff;color:#111;max-width:420px;margin:0 auto;padding:16px;border-radius:6px;font-family:monospace;font-size:14px}
@@ -66,6 +69,7 @@ textarea{min-height:90px}
 <body>
 <header>🏍️ Bike Maintenance Record</header>
 <div id="gAlert"></div>
+<div id="dlg"><div class="bx"><p id="dlgT"></p><div class="row"><button class="btn s" id="dlgNo" style="width:100%">Cancel</button><button class="btn" id="dlgOk" style="margin:0">OK</button></div></div></div>
 <div id="dueModal"><div class="bx"><div class="ic" id="dmI"></div><h3 id="dmT"></h3><p id="dmM"></p><button class="btn" onclick="$('dueModal').style.display='none'">OK</button></div></div>
 
 <!-- STATUS -->
@@ -147,7 +151,7 @@ textarea{min-height:90px}
 </div>
 
 <script>
-var APP_VERSION=1; // increase this number each time you upload a new version
+var APP_VERSION=2; // increase this number each time you upload a new version
 var S={records:[],cur:0,interval:3000,bike:'',updated:0};
 var KEY='';
 function newS(){return {records:[],cur:0,interval:3000,bike:'',updated:0}}
@@ -155,6 +159,8 @@ var COMMON=['Engine Oil','Oil Filter','Air Filter','Spark Plug','Chain Set','Bra
 var slipText='';
 function load(){try{var d=localStorage.getItem(KEY);if(d){var o=JSON.parse(d);for(var k in o)S[k]=o[k]}}catch(e){}}
 function store(){S.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function msg(t,ok,ask){$('dlgT').textContent=t;$('dlg').style.display='flex';$('dlgNo').style.display=ask?'':'none';
+ $('dlgOk').onclick=function(){$('dlg').style.display='none';if(ok)ok()};$('dlgNo').onclick=function(){$('dlg').style.display='none'}}
 function $(i){return document.getElementById(i)}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function n(v){v=parseFloat(v);return isNaN(v)?0:v}
@@ -162,7 +168,7 @@ function sorted(){return S.records.slice().sort(function(a,b){return a.date<b.da
 function last(){var s=sorted();return s[s.length-1]}
 function curKm(){var m=S.cur||0;S.records.forEach(function(r){if(r.pres>m)m=r.pres});return m}
 function days(a,b){return Math.round((new Date(b)-new Date(a))/864e5)}
-function today(){return new Date().toISOString().slice(0,10)}
+function today(){var d=new Date(),m=d.getMonth()+1,x=d.getDate();return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(x<10?'0':'')+x}
 function recTotal(r){var t=n(r.tuning);r.parts.forEach(function(p){t+=n(p.cost)});return t}
 
 function tab(i){for(var k=0;k<5;k++){$('p'+k).classList.toggle('on',k==i);document.querySelectorAll('.tabs button')[k].classList.toggle('on',k==i)}
@@ -194,9 +200,9 @@ function addPart(nm){var d=document.createElement('div');d.className='pt';
  d.innerHTML='<input placeholder="Part name" value="'+esc(nm)+'"><input type="number" inputmode="decimal" placeholder="Cost"><button class="x" onclick="this.parentNode.remove();calc()">×</button>';
  d.children[1].addEventListener('input',calc);$('plist').appendChild(d)}
 function save(){var pv=parseFloat($('pv').value),pr=parseFloat($('pr').value),dt=$('dt').value;
- if(!dt||isNaN(pr)){alert('Date and present km are required');return}
+ if(!dt||isNaN(pr)){msg('Date and present km are required');return}
  if(isNaN(pv))pv=0;
- if(pr<pv){alert('Present km cannot be less than previous km');return}
+ if(pr<pv){msg('Present km cannot be less than previous km');return}
  var parts=[];document.querySelectorAll('#plist .pt').forEach(function(d){if(d.children[0].value.trim())parts.push({name:d.children[0].value.trim(),cost:n(d.children[1].value)})});
  var l=last();
  var r={id:Date.now(),date:dt,mech:$('mech').value.trim(),prev:pv,pres:pr,gap:l?days(l.date,dt):0,tuning:n($('tun').value),notes:$('nt').value.trim(),parts:parts};
@@ -243,7 +249,7 @@ function renderHist(){var s=sorted().reverse(),h='',g=0,d=dueInfo();
    '<div class="row" style="margin-top:8px"><button class="btn s" onclick="showSlip('+r.id+')">View Slip</button><button class="btn s" onclick="del('+r.id+')">Delete</button></div></div></div>'});
  if(s.length)h='<div class="card"><b>Total spent on all services: Rs '+g+'</b></div>'+h;
  $('hist').innerHTML=h}
-function del(id){if(!confirm('Delete this record?'))return;S.records=S.records.filter(function(r){return r.id!=id});store();initForm();checkDue(false);renderHist()}
+function del(id){msg('Delete this record?',function(){S.records=S.records.filter(function(r){return r.id!=id});store();initForm();checkDue(false);renderHist()},true)}
 
 function showSlip(id){var r=S.records.filter(function(x){return x.id==id})[0];if(!r)return;
  var pt=0,h='<h2>SERVICE SLIP</h2>'+(S.bike?'<div style="text-align:center">'+esc(S.bike)+'</div>':'')+'<hr>',
@@ -262,10 +268,10 @@ function showSlip(id){var r=S.records.filter(function(x){return x.id==id})[0];if
  h+='<div class="l"><span>Next service at</span><span>'+due+' km</span></div>';t+='Next service at: '+due+' km\n';
  $('paper').innerHTML=h;slipText=t;$('slip').style.display='block'}
 function closeSlip(){$('slip').style.display='none'}
-function copySlip(){var ta=document.createElement('textarea');ta.value=slipText;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');alert('Slip copied. Paste it in WhatsApp or notes.')}catch(e){}ta.remove()}
+function copySlip(){var ta=document.createElement('textarea');ta.value=slipText;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');msg('Slip copied. Paste it in WhatsApp or notes.')}catch(e){}ta.remove()}
 
 function exp(){$('bk').value=JSON.stringify(S);$('bk').select();try{document.execCommand('copy')}catch(e){}}
-function imp(){try{var d=JSON.parse($('bk').value);if(!d.records)throw 0;S=d;store();initForm();alert('Restored ✅')}catch(e){alert('Invalid backup text')}}
+function imp(){try{var d=JSON.parse($('bk').value);if(!d.records)throw 0;S=d;store();initForm();msg('Restored ✅')}catch(e){msg('Invalid backup text')}}
 
 COMMON.forEach(function(nm){var b=document.createElement('button');b.className='chip';b.textContent='+ '+nm;b.onclick=function(){addPart(nm)};$('chips').appendChild(b)});
 ['dt','pv','pr','tun'].forEach(function(i){$(i).addEventListener('input',calc)});
